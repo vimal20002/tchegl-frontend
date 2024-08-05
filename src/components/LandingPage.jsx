@@ -2,10 +2,11 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import NoItems from './NoItems'; // Import the NoItems component
 
 const fetchItems = async () => {
-  const { data } = await axios.get('http://localhost:5000/api/products');
+  const { data } = await axios.get('https://tchegl-backend.onrender.com/api/products');
   return data;
 };
 
@@ -17,7 +18,7 @@ const addToCart = async ({ productId, quantity }) => {
   }
 
   await axios.post(
-    'http://localhost:5000/api/cart',
+    'https://tchegl-backend.onrender.com/api/cart',
     { productId, quantity },
     {
       headers: {
@@ -39,7 +40,9 @@ const LandingPage = () => {
   const mutation = useMutation({
     mutationFn: addToCart,
     onSuccess: () => {
-      // Optionally, you can refetch data or show a success message
+      // Show an alert and redirect to cart
+      alert('Item added to cart!');
+      navigate('/cart');
       queryClient.invalidateQueries(['items']); // Example to refetch items
     },
     onError: (error) => {
@@ -70,21 +73,31 @@ const LandingPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl mb-6">Landing Page</h1>
+      <h1 className="text-3xl mb-6 text-center font-bold">Landing Page</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {items?.map(item => (
-          <div key={item._id} className="bg-white p-4 rounded shadow">
-            <img src={item.image} alt={item.name} className="w-full h-48 object-cover mb-4"/>
-            <h2 className="text-xl mb-2">{item.name}</h2>
-            <p>{item.description}</p>
-            <p className="font-bold">Price: ${item.price}</p>
+          <motion.div
+            key={item._id}
+            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-full h-48 object-cover mb-4 rounded-lg"
+            />
+            <h2 className="text-xl mb-2 font-semibold">{item.name}</h2>
+            <p className="mb-2">{item.description}</p>
+            <p className="font-bold mb-4">Price: ${item.price}</p>
             <button
               onClick={() => handleAddToCart(item._id)}
-              className="bg-blue-600 text-white py-2 px-4 rounded"
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300"
             >
               Add to Cart
             </button>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

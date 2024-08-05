@@ -4,8 +4,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const fetchCustomerData = async () => {
-  const { data } = await axios.get('http://localhost:5000/api/customers/me', {
-    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+  const { data } = await axios.get('https://tchegl-backend.onrender.com/api/customers/me', {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
   return data;
 };

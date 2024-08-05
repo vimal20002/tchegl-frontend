@@ -1,40 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { motion, useAnimation } from 'framer-motion';
 
 const Navbar = () => {
   const { isLoggedIn, role, setIsLoggedIn, setRole } = useAuth();
-  const [loginFlag, setLoginFlag] = useState(false)
-  const [roleVal, setRoleVal] = useState("")
-  useEffect(()=>{
-    const token = localStorage.getItem('token')
-    const role = localStorage.getItem('role')
-    setRoleVal(role)
-    setLoginFlag(token!=null)
-  },[])
-  useEffect(()=>{
-    if(isLoggedIn)
-setLoginFlag(isLoggedIn)
-  },[isLoggedIn])
-  useEffect(()=>{
-    if(role!='')
-setRoleVal(role)
-  },[role])
-  const navigate = useNavigate()
+  const [loginFlag, setLoginFlag] = useState(false);
+  const [roleVal, setRoleVal] = useState("");
+  const navigate = useNavigate();
+  const controls = useAnimation();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('role');
+    setLoginFlag(!!token);
+    setRoleVal(storedRole || "");
+  }, [isLoggedIn, role]);
+
+  useEffect(() => {
+    controls.start({ opacity: 1, y: 0 });
+  }, [controls]);
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setRole('user');
-    setLoginFlag(false)
+    setLoginFlag(false);
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    navigate('/login')
+    navigate('/login');
   };
-  useEffect(()=>{
-    console.log(loginFlag)
-  },[loginFlag])
+
+  const handleRoleSwitch = (newRole) => {
+    setRole(newRole);
+    localStorage.setItem('role', newRole);
+  };
 
   return (
-    <nav className="bg-blue-600 p-4">
+    <motion.nav
+      className="bg-blue-600 p-4"
+      initial={{ opacity: 0, y: -20 }}
+      animate={controls}
+      transition={{ duration: 0.5 }}
+    >
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-white text-lg font-bold">Ecommerce</Link>
         <div>
@@ -54,37 +61,42 @@ setRoleVal(role)
               {roleVal === 'manager' && (
                 <Link to="/manager-dashboard" className="text-white mr-4">Manager Dashboard</Link>
               )}
-              <button 
+              <motion.button 
                 onClick={handleLogout}
                 className="bg-red-500 text-white py-2 px-4 rounded ml-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Logout
-              </button>
+              </motion.button>
             </>
           )}
         </div>
-        {loginFlag && roleVal === 'user' && (
-          <Link to={'/'}>
-          <button 
-            onClick={() => {setRole('manager');localStorage.setItem('role',"manager")}}
-            className="bg-green-500 text-white py-2 px-4 rounded ml-2"
+        {loginFlag && (
+          roleVal === 'user' ? (
+            <motion.button 
+              onClick={() => handleRoleSwitch('manager')}
+              className="bg-green-500 text-white py-2 px-4 rounded ml-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-            Switch to Manager
-          </button>
-            </Link>
-        )}
-        {loginFlag && roleVal === 'manager' && (
-          <Link to={'/'}>
-          <button 
-            onClick={() => {setRole('user');localStorage.setItem('role',"user")}}
-            className="bg-green-500 text-white py-2 px-4 rounded ml-2"
-            >
-            Switch to User
-          </button>
-            </Link>
+              Switch to Manager
+            </motion.button>
+          ) : (
+            roleVal === 'manager' && (
+              <motion.button 
+                onClick={() => handleRoleSwitch('user')}
+                className="bg-green-500 text-white py-2 px-4 rounded ml-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Switch to User
+              </motion.button>
+            )
+          )
         )}
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
